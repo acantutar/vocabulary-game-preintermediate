@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vocabulary Recall Game</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Headway Pre-Intermediate</p>
+        <h1>Vocabulary Recall Game</h1>
+        <p class="subtitle">Practise words with example sentences, pronunciation and smart repetition. When a word reaches your target correct count, it automatically leaves the active game.</p>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-button" id="newGameBtn">New question</button>
+        <button class="primary-button" id="reviewBtn">Practise weak words</button>
+      </div>
+    </header>
+
+    <nav class="page-tabs" aria-label="Main navigation">
+      <button class="page-tab active" type="button" data-page="game">Game</button>
+      <button class="page-tab" type="button" data-page="add">Add Words</button>
+      <button class="page-tab" type="button" data-page="about">About ACT</button>
+    </nav>
+
+    <section id="gamePage" class="page-view active">
+      <section class="stats-strip" aria-label="General progress">
+        <article><span id="totalWordsStat">0</span><small>Words</small></article>
+        <article><span id="activeWordsStat">0</span><small>Active</small></article>
+        <article><span id="masteredWordsStat">0</span><small>Mastered</small></article>
+        <article><span id="sessionAccuracyStat">0%</span><small>Session accuracy</small></article>
+      </section>
+
+      <main class="app-grid">
+        <aside class="panel settings-panel">
+          <div class="panel-heading">
+            <h2>Settings</h2>
+            <p>Manage the game flow here.</p>
+          </div>
+
+          <label class="field-label" for="unitSelect">Unit</label>
+          <select id="unitSelect"></select>
+
+          <label class="field-label" for="modeSelect">Game mode</label>
+          <select id="modeSelect">
+            <option value="mixed">Mixed mode</option>
+            <option value="meaningCard">Meaning card</option>
+            <option value="wordMeaning">Word → meaning</option>
+            <option value="typeWord">Type the word</option>
+            <option value="sentenceMatch">Sentence match</option>
+          </select>
+
+          <label class="field-label" for="targetCorrect">Correct answers needed to master a word</label>
+          <input id="targetCorrect" type="number" min="1" max="10" value="2" />
+
+          <label class="check-row">
+            <input id="includeMastered" type="checkbox" />
+            <span>Include mastered words again</span>
+          </label>
+
+          <label class="check-row">
+            <input id="autoSpeak" type="checkbox" checked />
+            <span>Auto-speak the target word</span>
+          </label>
+
+          <div class="progress-box">
+            <div class="progress-top"><span>Selected pool progress</span><strong id="poolPercent">0%</strong></div>
+            <div class="progress-track"><div id="poolProgress" class="progress-fill"></div></div>
+            <p id="poolSummary" class="muted">No data yet.</p>
+          </div>
+
+          <button class="danger-button" id="resetProgressBtn">Reset progress</button>
+        </aside>
+
+        <section class="game-card" aria-live="polite">
+          <div class="game-card-top">
+            <span id="questionModeBadge" class="badge">Game</span>
+            <span id="wordMeta" class="word-meta">Unit -</span>
+          </div>
+
+          <div id="questionArea" class="question-area"></div>
+          <div id="optionsArea" class="options-area"></div>
+          <div id="feedbackArea" class="feedback-area"></div>
+
+          <div class="game-actions">
+            <button class="ghost-button" id="hintBtn">Show hint</button>
+            <button class="ghost-button" id="speakBtn">Speak</button>
+            <button class="primary-button" id="nextBtn">Next question</button>
+          </div>
+        </section>
+
+        <aside class="panel session-panel">
+          <div class="panel-heading">
+            <h2>Scoreboard</h2>
+            <p>Session and word-level progress.</p>
+          </div>
+          <div class="score-mini">
+            <div><strong id="sessionCorrect">0</strong><span>Correct</span></div>
+            <div><strong id="sessionWrong">0</strong><span>Wrong</span></div>
+            <div><strong id="sessionStreak">0</strong><span>Streak</span></div>
+          </div>
+          <div class="tip-card">
+            <strong>Study logic</strong>
+            <p>New and missed words appear more often. A word leaves the active game after it reaches your correct-answer target.</p>
+          </div>
+          <div class="tip-card english-only">
+            <strong>English-only learning</strong>
+            <p>Definitions, examples, pronunciation and hints are kept in English.</p>
+          </div>
+        </aside>
+      </main>
+
+      <section class="management-grid scoreboard-only">
+        <div class="panel table-panel">
+          <div class="table-header">
+            <div>
+              <h2>Word Scoreboard</h2>
+              <p>Search, filter by unit, sort by correct or wrong answers, and export your progress.</p>
+            </div>
+            <div class="row-actions">
+              <button class="ghost-button" id="exportProgressBtn">Download progress</button>
+              <button class="ghost-button" id="copyWordsBtn">Copy word JSON</button>
+            </div>
+          </div>
+          <div class="score-controls">
+            <input id="searchInput" class="search-input" placeholder="Search words..." />
+            <select id="scoreUnitFilter" aria-label="Filter scoreboard by unit"></select>
+            <select id="scoreSortSelect" aria-label="Sort scoreboard">
+              <option value="wrongDesc">Most wrong first</option>
+              <option value="wrongAsc">Fewest wrong first</option>
+              <option value="correctDesc">Most correct first</option>
+              <option value="correctAsc">Fewest correct first</option>
+              <option value="unitAsc">Unit order</option>
+              <option value="unitDesc">Unit order reverse</option>
+              <option value="typeAsc">Type A–Z</option>
+              <option value="typeDesc">Type Z–A</option>
+              <option value="statusDesc">Status: mastered first</option>
+              <option value="statusAsc">Status: new first</option>
+              <option value="az">A–Z</option>
+              <option value="za">Z–A</option>
+            </select>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th><button class="score-sort-header" type="button" data-score-sort="word">Word</button></th>
+                  <th><button class="score-sort-header" type="button" data-score-sort="unit">Unit</button></th>
+                  <th><button class="score-sort-header" type="button" data-score-sort="type">Type</button></th>
+                  <th><button class="score-sort-header" type="button" data-score-sort="correct">Correct</button></th>
+                  <th><button class="score-sort-header" type="button" data-score-sort="wrong">Wrong</button></th>
+                  <th><button class="score-sort-header" type="button" data-score-sort="status">Status</button></th>
+                </tr>
+              </thead>
+              <tbody id="scoreTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="addPage" class="page-view">
+      <section class="management-grid add-only">
+        <div class="panel add-panel">
+          <div class="panel-heading">
+            <h2>Add Your Own Words</h2>
+            <p>Your added words are stored in this browser and included in the game.</p>
+          </div>
+          <form id="addWordForm" class="word-form">
+            <input name="english" placeholder="English word / phrase" required />
+            <input name="partOfSpeech" placeholder="Part of speech, e.g. n, v, adj" />
+            <input name="phonetics" placeholder="Phonetics, e.g. /wɜːd/" />
+            <input name="unit" type="number" min="1" max="99" placeholder="Unit" />
+            <textarea name="example" placeholder="English example sentence" required></textarea>
+            <textarea name="definition" placeholder="Optional English definition / clue"></textarea>
+            <button class="primary-button" type="submit">Add word</button>
+          </form>
+
+          <details class="import-box">
+            <summary>Bulk add with CSV / JSON</summary>
+            <p class="muted">CSV columns: english, partOfSpeech, phonetics, example, unit, definition</p>
+            <textarea id="bulkInput" placeholder='english,partOfSpeech,phonetics,example,unit
+reliable,adj,/rɪˈlaɪəb(ə)l/,She is a reliable friend.,7'></textarea>
+            <div class="row-actions">
+              <button class="ghost-button" id="importCsvBtn">Import</button>
+              <button class="ghost-button" id="exportCustomBtn">Export custom words</button>
+            </div>
+          </details>
+        </div>
+      </section>
+    </section>
+
+    <section id="aboutPage" class="page-view">
+      <div class="panel about-panel">
+        <div class="panel-heading">
+          <h2>About ACT</h2>
+          <p>This vocabulary game was made by ACT.</p>
+        </div>
+        <p>For feature requests or extra development requests, contact: <a href="mailto:acantutar3@gmail.com">acantutar3@gmail.com</a>.</p>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>Data is stored only in this browser. The site runs statically; no server is required.</p>
+      <p class="footer-credit">Made By <a href="#about" id="actFooterLink">ACT</a></p>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="words.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
