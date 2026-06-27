@@ -316,10 +316,9 @@
   }
 
   function renderTypeWordQuestion(q) {
-    const prompt = typeWordPromptText(q.word);
     els.questionArea.innerHTML = `
-      <div class="question-label">Definition → Type the word</div>
-      <p class="question-text type-clue-text">${escapeHtml(prompt)}</p>
+      <div class="question-label">Type the word</div>
+      <p class="question-text type-clue-text">${escapeHtml(explanationText(q.word))}</p>
       <p class="question-subtext">Write the English word or phrase. Pronunciation: <span class="phonetic">${escapeHtml(q.word.phonetics || '')}</span></p>
     `;
     els.optionsArea.innerHTML = `
@@ -519,14 +518,6 @@
 
   function clearFeedback() {
     els.feedbackArea.innerHTML = '';
-  }
-
-  function typeWordPromptText(word) {
-    const gap = makeGapSentence(word.example, word.english);
-    if (gap.found) return gap.text;
-    const example = String(word.example || '').trim();
-    if (example) return hideWordInText(example, word.english);
-    return 'Type the English word or phrase.';
   }
 
   function explanationText(word) {
@@ -1182,10 +1173,9 @@
   }
 
   function renderRunTypeWord(q) {
-    const prompt = typeWordPromptText(q.word);
     els.runQuestionArea.innerHTML = `
       <div class="question-label">Definition → Type the word</div>
-      <p class="question-text type-clue-text">${escapeHtml(prompt)}</p>
+      <p class="question-text type-clue-text">${escapeHtml(explanationText(q.word))}</p>
       <p class="question-subtext">Write the English word or phrase.</p>
     `;
     els.runOptionsArea.innerHTML = `
