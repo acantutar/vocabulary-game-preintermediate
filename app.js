@@ -31,6 +31,7 @@
 
   let autoNextTimer = null;
   let runAutoTimer = null;
+  let smoothScrollFrame = null;
 
   function createEmptyRunState() {
     return {
@@ -262,6 +263,7 @@
     if (state.settings.autoSpeak) {
       setTimeout(() => speak(word.english), 350);
     }
+    scrollToMainQuestion();
   }
 
   function renderQuestion() {
@@ -388,6 +390,7 @@
       </div>
     `;
     $('revealCardBtn').disabled = true;
+    scrollToMainFeedback();
 
     const dictionaryEntry = await getDictionaryEntry(q.word);
     if (!state.currentQuestion || state.currentQuestion.word.id !== wordId) return;
@@ -399,6 +402,7 @@
         <p class="example-reveal"><strong>Example:</strong> ${escapeHtml(q.word.example)}</p>
       </div>
     `;
+    scrollToMainFeedback();
   }
 
   function markMeaningCard(knewIt) {
@@ -516,6 +520,7 @@
         <p class="muted">Progress: ${p.correct}/${state.settings.targetCorrect} correct · ${p.wrong} wrong</p>
       </div>
     `;
+    if (!correct) scrollToMainFeedback();
   }
 
   function clearFeedback() {
@@ -858,6 +863,7 @@
         <p class="example-reveal"><strong>Context clue:</strong> ${escapeHtml(maskTargetWord(hint, word.english))}</p>
       </div>
     `;
+    scrollToMainFeedback();
 
     const dictionaryEntry = await getDictionaryEntry(word);
     if (!state.currentQuestion || state.currentQuestion.word.id !== wordId) return;
@@ -868,6 +874,7 @@
         <p class="example-reveal"><strong>Context clue:</strong> ${escapeHtml(maskTargetWord(hint, word.english))}</p>
       </div>
     `;
+    scrollToMainFeedback();
   }
 
   function renderFinishedState() {
@@ -1083,9 +1090,9 @@
     state.run.total = total;
     state.run.queue = buildRunQueue(pool, total);
     if (els.runResultsPanel) els.runResultsPanel.classList.add('hidden');
+    showPage('run', { scrollTop: false });
     renderRunProgress();
     nextRunQuestion();
-    showPage('run');
   }
 
   function nextRunQuestion() {
@@ -1114,6 +1121,7 @@
     if (state.settings.autoSpeak) {
       setTimeout(() => speak(word.english), 250);
     }
+    scrollToRunQuestion();
   }
 
   function renderRunIdle() {
@@ -1259,6 +1267,7 @@
     `;
     const button = $('runRevealBtn');
     if (button) button.disabled = true;
+    scrollToRunFeedback();
     const dictionaryEntry = await getDictionaryEntry(q.word);
     if (!state.run.current || state.run.current.word.id !== wordId) return;
     els.runFeedbackArea.innerHTML = `
@@ -1269,6 +1278,7 @@
         <p class="example-reveal"><strong>Example:</strong> ${escapeHtml(q.word.example)}</p>
       </div>
     `;
+    scrollToRunFeedback();
   }
 
   function answerRunCurrent(correct) {
@@ -1315,6 +1325,7 @@
         <p class="muted">Progress: ${p.correct}/${state.settings.targetCorrect} correct · ${p.wrong} wrong</p>
       </div>
     `;
+    if (!correct) scrollToRunFeedback();
   }
 
   async function showRunHint() {
@@ -1328,6 +1339,7 @@
         <p class="example-reveal"><strong>Context clue:</strong> ${escapeHtml(maskTargetWord(explanationText(q.word), q.word.english))}</p>
       </div>
     `;
+    scrollToRunFeedback();
     const dictionaryEntry = await getDictionaryEntry(q.word);
     if (!state.run.current || state.run.current.word.id !== wordId) return;
     els.runFeedbackArea.innerHTML = `
@@ -1337,6 +1349,7 @@
         <p class="example-reveal"><strong>Context clue:</strong> ${escapeHtml(maskTargetWord(explanationText(q.word), q.word.english))}</p>
       </div>
     `;
+    scrollToRunFeedback();
   }
 
   function renderRunProgress() {
@@ -1620,7 +1633,138 @@
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  function showPage(page) {
+
+  function isMobilePlayViewport() {
+    return window.matchMedia('(max-width: 760px)').matches;
+  }
+
+  function preferredScrollDuration(distance) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 0;
+    const absoluteDistance = Math.abs(distance);
+    if (absoluteDistance < 160) return 260;
+    if (absoluteDistance > 1200) return 620;
+    return 420;
+  }
+
+  function smoothScrollTo(targetTop, options = {}) {
+    const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const endTop = Math.max(0, Math.min(targetTop, maxTop));
+    const startTop = window.scrollY || document.documentElement.scrollTop || 0;
+    const distance = endTop - startTop;
+    const duration = options.duration ?? preferredScrollDuration(distance);
+
+    if (smoothScrollFrame) cancelAnimationFrame(smoothScrollFrame);
+    if (!duration || Math.abs(distance) < 4) {
+      window.scrollTo({ top: endTop, behavior: 'auto' });
+      return;
+    }
+
+    const startTime = performance.now();
+    const easeInOutCubic = (t) => t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const step = (now) => {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const eased = easeInOutCubic(progress);
+      window.scrollTo({ top: startTop + distance * eased, behavior: 'auto' });
+      if (progress < 1) {
+        smoothScrollFrame = requestAnimationFrame(step);
+      } else {
+        smoothScrollFrame = null;
+      }
+    };
+
+    smoothScrollFrame = requestAnimationFrame(step);
+  }
+
+  function scrollToElement(target, options = {}) {
+    if (!target) return;
+    const {
+      block = 'start',
+      delay = 50,
+      offset = isMobilePlayViewport() ? 10 : 18
+    } = options;
+
+    const runScroll = () => {
+      const rect = target.getBoundingClientRect();
+      let targetTop = (window.scrollY || document.documentElement.scrollTop || 0) + rect.top - offset;
+      if (block === 'center') {
+        targetTop = (window.scrollY || document.documentElement.scrollTop || 0) + rect.top - Math.max(0, (window.innerHeight - rect.height) / 2);
+      }
+      smoothScrollTo(targetTop, options);
+    };
+
+    window.setTimeout(() => requestAnimationFrame(runScroll), delay);
+  }
+
+  function scrollToPlayFeedback(feedbackArea, questionArea, options = {}) {
+    if (!feedbackArea || !questionArea) return;
+    const {
+      delay = 90,
+      duration
+    } = options;
+
+    const runScroll = () => {
+      const feedbackBox = feedbackArea.querySelector('.feedback-box') || feedbackArea;
+      if (!feedbackBox) return;
+
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 720;
+      const currentTop = window.scrollY || document.documentElement.scrollTop || 0;
+      const feedbackRect = feedbackBox.getBoundingClientRect();
+      const questionRect = questionArea.getBoundingClientRect();
+      const mobile = isMobilePlayViewport();
+
+      const comfortableFeedbackLine = viewportHeight * (mobile ? 0.70 : 0.72);
+      const highFeedbackLine = viewportHeight * (mobile ? 0.32 : 0.34);
+      let delta = 0;
+
+      if (feedbackRect.top > comfortableFeedbackLine) {
+        delta = feedbackRect.top - comfortableFeedbackLine;
+      } else if (feedbackRect.top < highFeedbackLine) {
+        delta = feedbackRect.top - highFeedbackLine;
+      }
+
+      if (Math.abs(delta) < 10 && questionRect.top > viewportHeight * 0.42) {
+        delta = questionRect.top - viewportHeight * 0.24;
+      }
+
+      const allowQuestionSlightlyAboveTop = mobile ? -12 : -20;
+      const maxDownBeforeLosingQuestion = Math.max(0, questionRect.top - allowQuestionSlightlyAboveTop);
+      const maxComfortDown = mobile ? 210 : 260;
+      const maxDown = Math.min(maxComfortDown, maxDownBeforeLosingQuestion + (mobile ? 40 : 60));
+      const maxUp = mobile ? 150 : 180;
+      const controlledDelta = Math.max(-maxUp, Math.min(delta, maxDown));
+
+      if (Math.abs(controlledDelta) < 14) return;
+      smoothScrollTo(currentTop + controlledDelta, { duration: duration ?? (mobile ? 390 : 440) });
+    };
+
+    window.setTimeout(() => requestAnimationFrame(runScroll), delay);
+  }
+
+  function scrollToMainQuestion(options = {}) {
+    scrollToElement(els.questionArea, { block: 'start', ...options });
+  }
+
+  function scrollToMainFeedback(options = {}) {
+    scrollToPlayFeedback(els.feedbackArea, els.questionArea, options);
+  }
+
+  function scrollToRunQuestion(options = {}) {
+    scrollToElement(els.runQuestionArea, { block: 'start', delay: 70, ...options });
+  }
+
+  function scrollToRunFeedback(options = {}) {
+    scrollToPlayFeedback(els.runFeedbackArea, els.runQuestionArea, options);
+  }
+
+  function focusActivePlayArea(page, delay = 90) {
+    if (page === 'game') scrollToMainQuestion({ delay });
+    if (page === 'run') scrollToRunQuestion({ delay });
+  }
+
+  function showPage(page, options = {}) {
     const safePage = ['game', 'run', 'about'].includes(page) ? page : 'game';
     document.querySelectorAll('.page-view').forEach(view => {
       view.classList.toggle('active', view.id === `${safePage}Page`);
@@ -1631,7 +1775,13 @@
     if (location.hash !== `#${safePage}`) {
       history.replaceState(null, '', `#${safePage}`);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (safePage === 'about') {
+      if (options.scrollTop !== false) smoothScrollTo(0);
+      return;
+    }
+    if (options.focusPlayArea !== false) {
+      focusActivePlayArea(safePage, options.delay ?? 100);
+    }
   }
 
   function bindEvents() {
