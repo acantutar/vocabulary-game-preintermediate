@@ -533,3 +533,440 @@ th { position: sticky; top: 0; background: linear-gradient(180deg, #f8fafc, #eef
 @media (max-width: 480px) {
   .run-hero-stats, .run-result-grid, .run-mini-score { grid-template-columns: 1fr; }
 }
+
+/* Small scoreboard refresh: simpler, clearer session snapshot. */
+.scoreboard-heading p { margin-bottom: 12px; }
+.score-mini-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.score-mini-compact div {
+  text-align: center;
+  min-height: 76px;
+}
+.scoreboard-note {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 15px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: 0 6px 16px rgba(16, 24, 40, .035);
+}
+.scoreboard-note p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.run-celebration-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid #c7d2fe;
+  border-radius: 22px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: linear-gradient(180deg, #ffffff, #eef2ff);
+  box-shadow: 0 10px 24px rgba(79, 70, 229, .08);
+}
+.run-celebration-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #dbe4ff;
+  font-size: 24px;
+}
+.run-celebration-card strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+.run-celebration-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 14px;
+}
+@media (max-width: 480px) {
+  .score-mini-compact { grid-template-columns: 1fr; }
+}
+
+/* Mobile play-focus refinements: keep desktop unchanged, make the question card the main focus on phones. */
+@media (max-width: 760px) {
+  body {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(79, 70, 229, .15), transparent 18rem),
+      linear-gradient(180deg, #f5f7ff 0%, #ffffff 72%);
+  }
+
+  .page-shell {
+    width: min(100% - 12px, 1440px);
+    padding: 8px 0 28px;
+  }
+
+  .site-header {
+    padding: 16px;
+    border-radius: 22px;
+    box-shadow: 0 12px 28px rgba(16, 24, 40, .09);
+  }
+
+  .eyebrow {
+    margin-bottom: 8px;
+    font-size: 10px;
+    letter-spacing: .11em;
+  }
+
+  h1 {
+    font-size: 28px;
+    line-height: 1.02;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .header-actions {
+    margin-top: 12px;
+    gap: 8px;
+  }
+
+  .primary-button,
+  .ghost-button,
+  .danger-button {
+    padding: 10px 13px;
+    font-size: 13px;
+  }
+
+  .page-tabs {
+    margin: 10px 0;
+    padding: 5px;
+    gap: 5px;
+    border-radius: 18px;
+  }
+
+  .page-tab {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .stats-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 8px 0 10px;
+  }
+
+  .stats-strip article {
+    padding: 9px 5px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: none;
+  }
+
+  .stats-strip article::before {
+    height: 2px;
+  }
+
+  .stats-strip span {
+    font-size: 17px;
+  }
+
+  .stats-strip small {
+    margin-top: 4px;
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .app-grid,
+  .run-layout {
+    gap: 10px;
+  }
+
+  .game-card {
+    padding: 14px;
+    border-radius: 24px;
+    min-height: auto;
+    box-shadow: 0 18px 42px rgba(16, 24, 40, .13);
+  }
+
+  .game-card::before {
+    height: 5px;
+  }
+
+  .game-card-top {
+    margin-bottom: 10px;
+  }
+
+  .badge {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .word-meta {
+    font-size: 12px;
+  }
+
+  .question-area {
+    min-height: 175px;
+    padding: 18px;
+    margin-bottom: 12px;
+    border-radius: 22px;
+  }
+
+  .question-label {
+    font-size: 11px;
+    margin-bottom: 9px;
+  }
+
+  .question-text {
+    font-size: clamp(28px, 10vw, 42px);
+    line-height: 1.1;
+  }
+
+  .question-subtext {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .type-clue-text {
+    font-size: clamp(20px, 7vw, 30px);
+    line-height: 1.25;
+  }
+
+  .phonetic {
+    font-size: 20px;
+  }
+
+  .options-area {
+    gap: 9px;
+  }
+
+  .option-button {
+    min-height: 54px;
+    padding: 12px 13px;
+    border-radius: 16px;
+    font-size: 14px;
+  }
+
+  .feedback-area {
+    min-height: 54px;
+    margin: 10px 0;
+  }
+
+  .feedback-box {
+    padding: 11px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .game-actions {
+    gap: 7px;
+  }
+
+  .game-actions button {
+    flex: 1 1 auto;
+  }
+
+  .panel {
+    padding: 14px;
+    border-radius: 20px;
+    box-shadow: 0 10px 24px rgba(16, 24, 40, .07);
+  }
+
+  .panel::before {
+    height: 3px;
+  }
+
+  .panel-heading h2 {
+    font-size: 17px;
+  }
+
+  .panel-heading p,
+  .scoreboard-note,
+  .table-header p,
+  .run-hero-panel p {
+    display: none;
+  }
+
+  .field-label {
+    margin: 10px 0 6px;
+    font-size: 12px;
+  }
+
+  select,
+  input,
+  textarea {
+    border-radius: 13px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .check-row {
+    margin: 10px 0;
+    font-size: 13px;
+  }
+
+  .progress-box {
+    margin: 12px 0;
+    padding: 11px;
+    border-radius: 16px;
+  }
+
+  .progress-top {
+    font-size: 12px;
+  }
+
+  .progress-track {
+    height: 10px;
+    margin: 8px 0;
+  }
+
+  .muted {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .session-panel .panel-heading {
+    margin-bottom: 8px;
+  }
+
+  .score-mini-compact,
+  .score-mini {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .score-mini div,
+  .score-mini-compact div {
+    min-height: auto;
+    padding: 9px 4px;
+    border-radius: 14px;
+  }
+
+  .score-mini strong {
+    font-size: 19px;
+  }
+
+  .score-mini span {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+
+  .management-grid {
+    margin-top: 10px;
+  }
+
+  .table-panel {
+    opacity: .92;
+  }
+
+  .table-header h2 {
+    font-size: 17px;
+  }
+
+  .row-actions {
+    gap: 7px;
+    margin-top: 8px;
+  }
+
+  .table-scroll {
+    max-height: 360px;
+    border-radius: 16px;
+  }
+
+  .run-hero-panel {
+    margin: 10px 0;
+    padding: 13px;
+    border-radius: 20px;
+  }
+
+  .run-hero-panel h2 {
+    font-size: 22px;
+    margin-bottom: 0;
+  }
+
+  .run-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .run-hero-stats article,
+  .run-mini-score div,
+  .run-result-grid article {
+    padding: 9px 5px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: none;
+  }
+
+  .run-hero-stats strong,
+  .run-mini-score strong,
+  .run-result-grid strong {
+    font-size: 19px;
+  }
+
+  .run-hero-stats span,
+  .run-mini-score span,
+  .run-result-grid span {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+
+  .run-setup-panel {
+    padding-bottom: 12px;
+  }
+
+  .run-game-card {
+    min-height: auto;
+  }
+
+  .run-mini-score {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header .header-actions button {
+    flex: 1 1 100%;
+  }
+
+  .stats-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .game-card-top {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .question-area {
+    min-height: 188px;
+  }
+
+  .game-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .game-actions button {
+    width: 100%;
+    padding-inline: 8px;
+  }
+
+  .score-mini-compact,
+  .score-mini {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .session-panel {
+    opacity: .95;
+  }
+}

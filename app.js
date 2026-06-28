@@ -77,6 +77,7 @@
     reviewBtn: $('reviewBtn'),
     sessionCorrect: $('sessionCorrect'),
     sessionWrong: $('sessionWrong'),
+    sessionAccuracyMini: $('sessionAccuracyMini'),
     sessionStreak: $('sessionStreak'),
     addWordForm: $('addWordForm'),
     bulkInput: $('bulkInput'),
@@ -938,6 +939,7 @@
     els.poolSummary.textContent = `${completedSteps}/${totalSteps} correct-answer steps completed. ${mastered}/${words.length} words mastered. Target: ${target} correct.`;
     els.sessionCorrect.textContent = state.session.correct;
     els.sessionWrong.textContent = state.session.wrong;
+    if (els.sessionAccuracyMini) els.sessionAccuracyMini.textContent = `${accuracy}%`;
     els.sessionStreak.textContent = state.session.streak;
     renderRunProgress();
     renderScoreTable();
@@ -1357,6 +1359,35 @@
     els.runActiveTotal.textContent = Math.max(0, all.length - mastered);
   }
 
+  function runCelebrationMessage(learnedCount, strengthenedCount, reviewCount, accuracy) {
+    if (learnedCount > 0) {
+      return {
+        title: `Great job! You learned ${learnedCount} new ${learnedCount === 1 ? 'word' : 'words'}.`,
+        subtitle: `Accuracy: ${accuracy}% · Strengthened: ${strengthenedCount} · Needs review: ${reviewCount}`,
+        detail: 'Nice progress. These words are now closer to long-term memory.'
+      };
+    }
+    if (strengthenedCount > 0 && accuracy >= 70) {
+      return {
+        title: 'Great review! Your words got stronger.',
+        subtitle: `Accuracy: ${accuracy}% · Strengthened: ${strengthenedCount} · Needs review: ${reviewCount}`,
+        detail: 'You may not have mastered new words this time, but you reinforced words you already know.'
+      };
+    }
+    if (reviewCount > 0) {
+      return {
+        title: 'Good practice. Keep these words in review.',
+        subtitle: `Accuracy: ${accuracy}% · Strengthened: ${strengthenedCount} · Needs review: ${reviewCount}`,
+        detail: 'Missed words stay in the review pool, so the next run will help you remember them better.'
+      };
+    }
+    return {
+      title: 'Run complete. Nice work!',
+      subtitle: `Accuracy: ${accuracy}% · Strengthened: ${strengthenedCount} · Needs review: ${reviewCount}`,
+      detail: 'You completed the run and kept your vocabulary practice moving.'
+    };
+  }
+
   function finishRun() {
     clearTimeout(runAutoTimer);
     state.run.active = false;
@@ -1364,18 +1395,26 @@
     const learnedWords = idsToWords(state.run.learnedIds);
     const strengthenedWords = idsToWords(state.run.strengthenedIds);
     const reviewWords = idsToWords(state.run.reviewIds);
+    const celebration = runCelebrationMessage(learnedWords.length, strengthenedWords.length, reviewWords.length, accuracy);
     els.runModeBadge.textContent = 'Run complete';
     els.runWordMeta.textContent = `${state.run.answered}/${state.run.total} questions answered`;
     els.runQuestionArea.innerHTML = `
-      <div class="question-label">Run Complete</div>
-      <p class="question-text">You learned ${learnedWords.length} new ${learnedWords.length === 1 ? 'word' : 'words'}.</p>
-      <p class="question-subtext">Accuracy: ${accuracy}% · Strengthened: ${strengthenedWords.length} · Needs review: ${reviewWords.length}</p>
+      <div class="question-label">Run Complete 🎉</div>
+      <p class="question-text">${celebration.title}</p>
+      <p class="question-subtext">${celebration.subtitle}</p>
     `;
     els.runOptionsArea.innerHTML = '';
     els.runFeedbackArea.innerHTML = '';
     if (els.runResultsPanel) {
       els.runResultsPanel.classList.remove('hidden');
       els.runResultsContent.innerHTML = `
+        <div class="run-celebration-card">
+          <div class="run-celebration-icon">🎉</div>
+          <div>
+            <strong>${celebration.title}</strong>
+            <p>${celebration.detail}</p>
+          </div>
+        </div>
         <div class="run-result-grid">
           <article><strong>${state.run.answered}</strong><span>Words studied</span></article>
           <article><strong>${learnedWords.length}</strong><span>New mastered</span></article>
